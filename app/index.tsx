@@ -1,15 +1,15 @@
-import { StyleSheet } from 'react-native';
-import { View } from '@/components/Themed';
+import { StyleSheet, View } from 'react-native';
 import { DifficultySelector } from '@/components/DifficultySelector';
-import { useState } from 'react';
+import { useRouter } from 'expo-router';
 
-export default function SudokuScreen() {
-  const [selectedDifficulty, setSelectedDifficulty] = useState<'easy' | 'medium' | 'hard' | null>(null);
+export default function HomeScreen() {
+  const router = useRouter();
 
   const handleDifficultySelect = (difficulty: 'easy' | 'medium' | 'hard') => {
-    setSelectedDifficulty(difficulty);
-    // TODO: Initialize game with selected difficulty
-    console.log(`Starting ${difficulty} game`);
+    router.push({
+      pathname: '/game',
+      params: { difficulty }
+    });
   };
 
   return (
@@ -22,5 +22,6 @@ export default function SudokuScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 20,
   },
 }); 
