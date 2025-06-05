@@ -1,11 +1,20 @@
 import { StyleSheet } from 'react-native';
-import { Text, View } from '@/components/Themed';
+import { View } from '@/components/Themed';
+import { DifficultySelector } from '@/components/DifficultySelector';
+import { useState } from 'react';
 
-export default function MyGamesScreen() {
+export default function SudokuScreen() {
+  const [selectedDifficulty, setSelectedDifficulty] = useState<'easy' | 'medium' | 'hard' | null>(null);
+
+  const handleDifficultySelect = (difficulty: 'easy' | 'medium' | 'hard') => {
+    setSelectedDifficulty(difficulty);
+    // TODO: Initialize game with selected difficulty
+    console.log(`Starting ${difficulty} game`);
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>My Games Go Here</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+      <DifficultySelector onSelectDifficulty={handleDifficultySelect} />
     </View>
   );
 }
@@ -13,16 +22,5 @@ export default function MyGamesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
   },
 }); 
