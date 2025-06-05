@@ -1,14 +1,11 @@
 import { StyleSheet } from 'react-native';
-
-import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
 
 export default function MyGamesScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>My Games</Text>
+      <Text style={styles.title}>My Games Go Here</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
     </View>
   );
 }
@@ -28,4 +25,4 @@ const styles = StyleSheet.create({
     height: 1,
     width: '80%',
   },
-});
+}); 
