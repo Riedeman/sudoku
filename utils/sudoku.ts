@@ -62,12 +62,12 @@ const generateSolvedBoard = (): Board => {
 };
 
 // Create a puzzle by removing numbers based on difficulty
-const createPuzzle = (difficulty: 'easy' | 'medium' | 'hard'): Board => {
+const createPuzzle = (difficulty: 'easy' | 'medium' | 'hard'): { puzzle: Board; solution: Board } => {
   const solvedBoard = generateSolvedBoard();
   const puzzle: Board = solvedBoard.map(row => [...row]);
   
   const cellsToRemove = {
-    easy: 30,
+    easy: 3,
     medium: 40,
     hard: 50,
   }[difficulty];
@@ -85,39 +85,20 @@ const createPuzzle = (difficulty: 'easy' | 'medium' | 'hard'): Board => {
     puzzle[row][col] = null;
   }
   
-  return puzzle;
+  return { puzzle, solution: solvedBoard };
 };
 
-// Check if a move is valid
-const isValidMove = (board: Board, row: number, col: number, num: number): boolean => {
-  // Check row
-  for (let x = 0; x < 9; x++) {
-    if (board[row][x] === num) return false;
-  }
-  
-  // Check column
-  for (let x = 0; x < 9; x++) {
-    if (board[x][col] === num) return false;
-  }
-  
-  // Check 3x3 box
-  const boxRow = Math.floor(row / 3) * 3;
-  const boxCol = Math.floor(col / 3) * 3;
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
-      if (board[boxRow + i][boxCol + j] === num) return false;
-    }
-  }
-  
-  return true;
+// Check if a move is valid against the solution
+const isValidMove = (board: Board, solution: Board, row: number, col: number, num: number): boolean => {
+  return solution[row][col] === num;
 };
 
 // Check if the board is solved
-const isBoardSolved = (board: Board): boolean => {
+const isBoardSolved = (board: Board, solution: Board): boolean => {
+	console.log('isBoardSolved', board, solution);
   for (let row = 0; row < 9; row++) {
     for (let col = 0; col < 9; col++) {
-      if (board[row][col] === null) return false;
-      if (!isValidMove(board, row, col, board[row][col]!)) return false;
+      if (board[row][col] !== solution[row][col]) return false;
     }
   }
   return true;

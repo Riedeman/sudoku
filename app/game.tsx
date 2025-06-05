@@ -11,15 +11,17 @@ export default function GameScreen() {
   const [gameState, setGameState] = useState<'playing' | 'won'>('playing');
   const [initialBoard, setInitialBoard] = useState<Board | null>(null);
   const [userBoard, setUserBoard] = useState<Board | null>(null);
+  const [solutionBoard, setSolutionBoard] = useState<Board | null>(null);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
+  const [incorrectCells, setIncorrectCells] = useState<Set<string>>(new Set());
 
   // Initialize the game when the component mounts
   useState(() => {
     if (difficulty) {
-      const newBoard = createPuzzle(difficulty);
-      setInitialBoard(newBoard);
-      const emptyBoard: Board = Array(9).fill(null).map(() => Array(9).fill(null));
-      setUserBoard(emptyBoard);
+      const { puzzle, solution } = createPuzzle(difficulty);
+      setInitialBoard(puzzle);
+      setSolutionBoard(solution);
+      setUserBoard(puzzle);
     }
   });
 
@@ -30,26 +32,33 @@ export default function GameScreen() {
   };
 
   const handleNumberPress = (num: number) => {
-    if (gameState !== 'playing' || !initialBoard || !userBoard || !selectedCell) return;
+    if (gameState !== 'playing' || !initialBoard || !userBoard || !selectedCell || !solutionBoard) return;
     
     const { row, col } = selectedCell;
     if (initialBoard[row][col] !== null) return; // Don't modify initial values
+    
+    // Check if the move is valid against the solution
+    if (!isValidMove(userBoard, solutionBoard, row, col, num)) {
+      // Mark the cell as incorrect
+      setIncorrectCells(prev => new Set([...prev, `${row}-${col}`]));
+    } else {
+      // Remove the cell from incorrect cells if it was previously marked
+      setIncorrectCells(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(`${row}-${col}`);
+        return newSet;
+      });
+    }
     
     // Create a new board with the updated value
     const newUserBoard = userBoard.map(r => [...r]);
     newUserBoard[row][col] = num;
     
-    // Update the user board immediately
+    // Update the user board
     setUserBoard(newUserBoard);
     
-    // Check if the move is valid
-    if (!isValidMove(newUserBoard, row, col, num)) {
-      // If invalid, we could add visual feedback here
-      console.log('Invalid move');
-    }
-    
     // Check if the board is solved
-    if (isBoardSolved(newUserBoard)) {
+    if (isBoardSolved(newUserBoard, solutionBoard)) {
       setGameState('won');
     }
   };
@@ -101,6 +110,7 @@ export default function GameScreen() {
             userBoard={userBoard}
             onCellPress={handleCellPress}
             selectedCell={selectedCell}
+            incorrectCells={incorrectCells}
           />
         </View>
         <View style={styles.numberPadContainer}>

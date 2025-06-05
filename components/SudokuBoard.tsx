@@ -9,6 +9,7 @@ interface SudokuBoardProps {
   userBoard: Board;
   onCellPress: (row: number, col: number) => void;
   selectedCell: { row: number; col: number } | null;
+  incorrectCells: Set<string>;
 }
 
 export const SudokuBoard: React.FC<SudokuBoardProps> = ({
@@ -16,6 +17,7 @@ export const SudokuBoard: React.FC<SudokuBoardProps> = ({
   userBoard,
   onCellPress,
   selectedCell,
+  incorrectCells,
 }) => {
   const renderCell = (row: number, col: number) => {
     const initialValue = initialBoard[row][col];
@@ -23,6 +25,7 @@ export const SudokuBoard: React.FC<SudokuBoardProps> = ({
     const value = initialValue !== null ? initialValue : userValue;
     const isSelected = selectedCell?.row === row && selectedCell?.col === col;
     const isInitialValue = initialValue !== null;
+    const isIncorrect = incorrectCells.has(`${row}-${col}`);
 
     return (
       <TouchableOpacity
@@ -40,6 +43,7 @@ export const SudokuBoard: React.FC<SudokuBoardProps> = ({
             styles.cellText,
             isInitialValue ? styles.initialValue : styles.userValue,
             isSelected && styles.selectedText,
+            isIncorrect && styles.incorrectValue,
           ]}
         >
           {value || ''}
@@ -96,6 +100,9 @@ const styles = StyleSheet.create({
   },
   selectedText: {
     color: '#2196f3',
+  },
+  incorrectValue: {
+    color: '#f44336',
   },
   rightBorder: {
     borderRightWidth: 2,
