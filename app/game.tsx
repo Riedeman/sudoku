@@ -8,6 +8,13 @@ const { width } = Dimensions.get('window');
 const boardSize = width * 0.6;
 const cellSize = boardSize / 9;
 
+type Move = {
+  row: number;
+  col: number;
+  previousValue: number | null;
+  newValue: number | null;
+};
+
 export default function GameScreen() {
   const router = useRouter();
   const { difficulty } = useLocalSearchParams<{ difficulty: 'easy' | 'medium' | 'hard' }>();
@@ -18,6 +25,19 @@ export default function GameScreen() {
   const [solutionBoard, setSolutionBoard] = useState<Board | null>(null);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
   const [incorrectCells, setIncorrectCells] = useState<Set<string>>(new Set());
+  const [moveHistory, setMoveHistory] = useState<Move[]>([]);
+
+  const recordMove = (row: number, col: number, newValue: number | null) => {
+    if (!userBoard) return;
+    
+    const move: Move = {
+      row,
+      col,
+      previousValue: userBoard[row][col],
+      newValue
+    };
+    setMoveHistory(prev => [...prev, move]);
+  };
 
   // Initialize the game when the component mounts
   useState(() => {
@@ -40,6 +60,8 @@ export default function GameScreen() {
     
     const { row, col } = selectedCell;
     if (initialBoard[row][col] !== null) return; // Don't modify initial values
+    
+    recordMove(row, col, num);
     
     // Check if the move is valid against the solution
     if (!isValidMove(userBoard, solutionBoard, row, col, num)) {
@@ -73,12 +95,38 @@ export default function GameScreen() {
     const { row, col } = selectedCell;
     if (initialBoard[row][col] !== null) return; // Don't modify initial values
     
+    recordMove(row, col, null);
+    
     // Create a new board with the deleted value
     const newUserBoard = userBoard.map(r => [...r]);
     newUserBoard[row][col] = null;
     
     // Update the user board
     setUserBoard(newUserBoard);
+  };
+
+  const handleUndo = () => {
+    if (gameState !== 'playing' || !userBoard || moveHistory.length === 0) return;
+    
+    // Get the last move
+    const lastMove = moveHistory[moveHistory.length - 1];
+    
+    // Create a new board with the previous value
+    const newUserBoard = userBoard.map(r => [...r]);
+    newUserBoard[lastMove.row][lastMove.col] = lastMove.previousValue;
+    
+    // Update the user board
+    setUserBoard(newUserBoard);
+    
+    // Remove the last move from history
+    setMoveHistory(prev => prev.slice(0, -1));
+    
+    // Update incorrect cells
+    setIncorrectCells(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(`${lastMove.row}-${lastMove.col}`);
+      return newSet;
+    });
   };
 
   const renderNumberPad = () => {
@@ -93,12 +141,21 @@ export default function GameScreen() {
             <Text style={styles.numberButtonText}>{num}</Text>
           </TouchableOpacity>
         ))}
-        <TouchableOpacity
-          style={[styles.numberButton, styles.deleteButton]}
-          onPress={handleDelete}
-        >
-          <Text style={styles.deleteButtonText}>×</Text>
-        </TouchableOpacity>
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            style={[styles.numberButton, styles.deleteButton]}
+            onPress={handleDelete}
+          >
+            <Text style={styles.deleteButtonText}>×</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.numberButton, styles.undoButton]}
+            onPress={handleUndo}
+            disabled={moveHistory.length === 0}
+          >
+            <Text style={[styles.undoButtonText, moveHistory.length === 0 && styles.disabledButtonText]}>↩</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
@@ -172,6 +229,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     gap: 5,
+    width: '100%',
   },
   numberButton: {
     width: cellSize,
@@ -187,15 +245,34 @@ const styles = StyleSheet.create({
     fontSize: cellSize * 0.4,
     color: '#E0E0E0',
   },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: cellSize * 3 + 10,
+    marginTop: 5,
+  },
   deleteButton: {
     backgroundColor: '#2D1E1E',
-    marginTop: 5,
     borderColor: '#442222',
+    width: '48%',
+  },
+  undoButton: {
+    backgroundColor: '#1E2D2D',
+    borderColor: '#224444',
+    width: '48%',
   },
   deleteButtonText: {
     fontSize: cellSize * 0.5,
     color: '#FF6B6B',
     fontWeight: 'bold',
+  },
+  undoButtonText: {
+    fontSize: cellSize * 0.5,
+    color: '#6BFF6B',
+    fontWeight: 'bold',
+  },
+  disabledButtonText: {
+    color: '#666666',
   },
   winContainer: {
     flex: 1,
