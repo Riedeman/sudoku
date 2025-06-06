@@ -72,7 +72,8 @@ const styles = StyleSheet.create({
     width: boardSize,
     height: boardSize,
     borderWidth: 2,
-    borderColor: '#000',
+    borderColor: '#333',
+    backgroundColor: '#1E1E1E',
   },
   row: {
     flexDirection: 'row',
@@ -81,35 +82,37 @@ const styles = StyleSheet.create({
     width: cellSize,
     height: cellSize,
     borderWidth: 0.5,
-    borderColor: '#999',
+    borderColor: '#333',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#1E1E1E',
   },
   selectedCell: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: '#2C2C2C',
   },
   cellText: {
     fontSize: cellSize * 0.4,
+    color: '#E0E0E0',
   },
   initialValue: {
     fontWeight: 'bold',
-    color: '#000',
+    color: '#E0E0E0',
   },
   userValue: {
-    color: '#2196f3',
+    color: '#90CAF9',
   },
   selectedText: {
-    color: '#2196f3',
+    color: '#90CAF9',
   },
   incorrectValue: {
-    color: '#f44336',
+    color: '#FF6B6B',
   },
   rightBorder: {
     borderRightWidth: 2,
-    borderRightColor: '#000',
+    borderRightColor: '#333',
   },
   bottomBorder: {
     borderBottomWidth: 2,
-    borderBottomColor: '#000',
+    borderBottomColor: '#333',
   },
 }); 

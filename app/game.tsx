@@ -1,8 +1,12 @@
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Dimensions } from 'react-native';
 import { useState } from 'react';
 import { SudokuBoard } from '@/components/SudokuBoard';
 import { createPuzzle, type Board, isValidMove, isBoardSolved } from '@/utils/sudoku';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+
+const { width } = Dimensions.get('window');
+const boardSize = width * 0.6;
+const cellSize = boardSize / 9;
 
 export default function GameScreen() {
   const router = useRouter();
@@ -146,6 +150,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    backgroundColor: '#121212',
   },
   gameContainer: {
     flex: 1,
@@ -166,28 +171,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 10,
+    gap: 5,
   },
   numberButton: {
-    width: 50,
-    height: 50,
-    backgroundColor: '#e3f2fd',
-    borderRadius: 25,
+    width: cellSize,
+    height: cellSize,
+    backgroundColor: '#1E1E1E',
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    margin: 5,
+    borderWidth: 1,
+    borderColor: '#333',
   },
   numberButtonText: {
-    fontSize: 24,
-    color: '#2196f3',
+    fontSize: cellSize * 0.4,
+    color: '#E0E0E0',
   },
   deleteButton: {
-    backgroundColor: '#ffebee',
-    marginTop: 10,
+    backgroundColor: '#2D1E1E',
+    marginTop: 5,
+    borderColor: '#442222',
   },
   deleteButtonText: {
-    fontSize: 32,
-    color: '#f44336',
+    fontSize: cellSize * 0.5,
+    color: '#FF6B6B',
     fontWeight: 'bold',
   },
   winContainer: {
@@ -200,14 +207,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 20,
+    color: '#E0E0E0',
   },
   newGameButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#2E7D32',
     padding: 15,
     borderRadius: 10,
   },
   newGameButtonText: {
-    color: 'white',
+    color: '#E0E0E0',
     fontSize: 18,
     fontWeight: 'bold',
   },
