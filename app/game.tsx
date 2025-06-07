@@ -1,7 +1,7 @@
 import { StyleSheet, View, Text, TouchableOpacity, Dimensions } from 'react-native';
-import { useState } from 'react';
-import { SudokuBoard } from '@/components/SudokuBoard';
-import { createPuzzle, type Board, isValidMove, isBoardSolved } from '@/utils/sudoku';
+import { useState, useEffect } from 'react';
+import { SudokuBoard, type Board, type SudokuCell } from '@/components/SudokuBoard';
+import { createPuzzle } from '@/utils/sudoku';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
@@ -13,120 +13,138 @@ type Move = {
   col: number;
   previousValue: number | null;
   newValue: number | null;
+  previousCandidates: Set<number>;
+  newCandidates: Set<number>;
 };
 
 export default function GameScreen() {
   const router = useRouter();
   const { difficulty } = useLocalSearchParams<{ difficulty: 'easy' | 'medium' | 'hard' }>();
-  
-  const [gameState, setGameState] = useState<'playing' | 'won'>('playing');
-  const [initialBoard, setInitialBoard] = useState<Board | null>(null);
-  const [userBoard, setUserBoard] = useState<Board | null>(null);
-  const [solutionBoard, setSolutionBoard] = useState<Board | null>(null);
-  const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
-  const [incorrectCells, setIncorrectCells] = useState<Set<string>>(new Set());
-  const [moveHistory, setMoveHistory] = useState<Move[]>([]);
 
-  const recordMove = (row: number, col: number, newValue: number | null) => {
-    if (!userBoard) return;
-    
-    const move: Move = {
-      row,
-      col,
-      previousValue: userBoard[row][col],
-      newValue
-    };
-    setMoveHistory(prev => [...prev, move]);
-  };
+  const [gameState, setGameState] = useState<'playing' | 'won'>('playing');
+  const [board, setBoard] = useState<Board | null>(null);
+  const [moveHistory, setMoveHistory] = useState<Move[]>([]);
+  const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
+  const [isPencilMode, setIsPencilMode] = useState(false);
 
   // Initialize the game when the component mounts
-  useState(() => {
+  useEffect(() => {
     if (difficulty) {
-      const { puzzle, solution } = createPuzzle(difficulty);
-      setInitialBoard(puzzle);
-      setSolutionBoard(solution);
-      setUserBoard(puzzle);
+      const newBoard = createPuzzle(difficulty);
+      setBoard(newBoard);
     }
-  });
+  }, [difficulty]);
 
   const handleCellPress = (row: number, col: number) => {
-    if (gameState !== 'playing' || !initialBoard || !userBoard) return;
-    if (initialBoard[row][col] !== null) return; // Don't select initial values
+    if (gameState !== 'playing' || !board) return;
+    if (board[row][col].initialValue !== null) return; // Don't select initial values
+
+    // Update selected state for all cells
+    const newBoard = board.map(r =>
+      r.map(cell => ({
+        ...cell,
+        isSelected: false,
+      }))
+    );
+    newBoard[row][col].isSelected = true;
+    setBoard(newBoard);
     setSelectedCell({ row, col });
   };
 
   const handleNumberPress = (num: number) => {
-    if (gameState !== 'playing' || !initialBoard || !userBoard || !selectedCell || !solutionBoard) return;
+    if (gameState !== 'playing' || !board || !selectedCell) return;
     
     const { row, col } = selectedCell;
-    if (initialBoard[row][col] !== null) return; // Don't modify initial values
-    
-    recordMove(row, col, num);
-    
-    // Check if the move is valid against the solution
-    if (!isValidMove(userBoard, solutionBoard, row, col, num)) {
-      // Mark the cell as incorrect
-      setIncorrectCells(prev => new Set([...prev, `${row}-${col}`]));
+    const cell = board[row][col];
+    if (cell.initialValue !== null) return; // Don't modify initial values
+
+    const newBoard = board.map(r => r.map(c => ({ ...c })));
+    const newCell = newBoard[row][col];
+
+    if (isPencilMode) {
+      // Toggle candidate
+      const newCandidates = new Set(newCell.userCandidates);
+      if (newCandidates.has(num)) {
+        newCandidates.delete(num);
+      } else {
+        newCandidates.add(num);
+      }
+      
+      recordMove(row, col, newCell.userValue, newCell.userValue, newCell.userCandidates, newCandidates);
+      newCell.userCandidates = newCandidates;
     } else {
-      // Remove the cell from incorrect cells if it was previously marked
-      setIncorrectCells(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(`${row}-${col}`);
-        return newSet;
-      });
+      // Set value and store current candidates
+      const previousValue = newCell.userValue;
+      const previousCandidates = new Set(newCell.userCandidates);
+      
+      recordMove(row, col, previousValue, num, previousCandidates, previousCandidates);
+      newCell.userValue = num;
+      newCell.isCorrect = num === newCell.answer;
     }
-    
-    // Create a new board with the updated value
-    const newUserBoard = userBoard.map(r => [...r]);
-    newUserBoard[row][col] = num;
-    
-    // Update the user board
-    setUserBoard(newUserBoard);
-    
-    // Check if the board is solved
-    if (isBoardSolved(newUserBoard, solutionBoard)) {
-      setGameState('won');
-    }
+
+    setBoard(newBoard);
+    checkWinCondition(newBoard);
   };
 
   const handleDelete = () => {
-    if (gameState !== 'playing' || !initialBoard || !userBoard || !selectedCell) return;
+    if (gameState !== 'playing' || !board || !selectedCell) return;
     
     const { row, col } = selectedCell;
-    if (initialBoard[row][col] !== null) return; // Don't modify initial values
-    
-    recordMove(row, col, null);
-    
-    // Create a new board with the deleted value
-    const newUserBoard = userBoard.map(r => [...r]);
-    newUserBoard[row][col] = null;
-    
-    // Update the user board
-    setUserBoard(newUserBoard);
+    const cell = board[row][col];
+    if (cell.initialValue !== null) return; // Don't modify initial values
+
+    const newBoard = board.map(r => r.map(c => ({ ...c })));
+    const newCell = newBoard[row][col];
+
+    // Clear userValue but preserve candidates
+    recordMove(row, col, newCell.userValue, null, newCell.userCandidates, newCell.userCandidates);
+    newCell.userValue = null;
+    newCell.isCorrect = true;
+
+    setBoard(newBoard);
   };
 
   const handleUndo = () => {
-    if (gameState !== 'playing' || !userBoard || moveHistory.length === 0) return;
+    if (gameState !== 'playing' || !board || moveHistory.length === 0) return;
     
-    // Get the last move
     const lastMove = moveHistory[moveHistory.length - 1];
+    const newBoard = board.map(r => r.map(c => ({ ...c })));
+    const cell = newBoard[lastMove.row][lastMove.col];
     
-    // Create a new board with the previous value
-    const newUserBoard = userBoard.map(r => [...r]);
-    newUserBoard[lastMove.row][lastMove.col] = lastMove.previousValue;
+    cell.userValue = lastMove.previousValue;
+    cell.userCandidates = new Set(lastMove.previousCandidates);
+    cell.isCorrect = cell.userValue === null || cell.userValue === cell.answer;
     
-    // Update the user board
-    setUserBoard(newUserBoard);
-    
-    // Remove the last move from history
+    setBoard(newBoard);
     setMoveHistory(prev => prev.slice(0, -1));
-    
-    // Update incorrect cells
-    setIncorrectCells(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(`${lastMove.row}-${lastMove.col}`);
-      return newSet;
-    });
+  };
+
+  const recordMove = (
+    row: number,
+    col: number,
+    previousValue: number | null,
+    newValue: number | null,
+    previousCandidates: Set<number>,
+    newCandidates: Set<number>
+  ) => {
+    const move: Move = {
+      row,
+      col,
+      previousValue,
+      newValue,
+      previousCandidates,
+      newCandidates,
+    };
+    setMoveHistory(prev => [...prev, move]);
+  };
+
+  const checkWinCondition = (currentBoard: Board) => {
+    const isWon = currentBoard.every(row =>
+      row.every(cell => cell.isCorrect && cell.userValue !== null)
+    );
+    if (isWon) {
+      setGameState('won');
+    }
   };
 
   const renderNumberPad = () => {
@@ -135,10 +153,18 @@ export default function GameScreen() {
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
           <TouchableOpacity
             key={num}
-            style={styles.numberButton}
+            style={[
+              styles.numberButton,
+              isPencilMode && styles.pencilModeButton
+            ]}
             onPress={() => handleNumberPress(num)}
           >
-            <Text style={styles.numberButtonText}>{num}</Text>
+            <Text style={[
+              styles.numberButtonText,
+              isPencilMode && styles.pencilModeButtonText
+            ]}>
+              {num}
+            </Text>
           </TouchableOpacity>
         ))}
         <View style={styles.actionButtons}>
@@ -155,23 +181,28 @@ export default function GameScreen() {
           >
             <Text style={[styles.undoButtonText, moveHistory.length === 0 && styles.disabledButtonText]}>↩</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.numberButton, isPencilMode ? styles.pencilButtonActive : styles.pencilButton]}
+            onPress={() => setIsPencilMode(!isPencilMode)}
+          >
+            <Text style={styles.pencilButtonText}>
+              {isPencilMode ? '✎' : '✒'}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
   };
 
   const renderGame = () => {
-    if (!initialBoard || !userBoard) return null;
+    if (!board) return null;
     
     return (
       <View style={styles.gameContainer}>
         <View style={styles.boardContainer}>
           <SudokuBoard
-            initialBoard={initialBoard}
-            userBoard={userBoard}
+            board={board}
             onCellPress={handleCellPress}
-            selectedCell={selectedCell}
-            incorrectCells={incorrectCells}
           />
         </View>
         <View style={styles.numberPadContainer}>
@@ -245,6 +276,14 @@ const styles = StyleSheet.create({
     fontSize: cellSize * 0.4,
     color: '#E0E0E0',
   },
+  pencilModeButton: {
+    backgroundColor: '#1E1E2D',
+    borderColor: '#222244',
+  },
+  pencilModeButtonText: {
+    fontSize: cellSize * 0.3,
+    color: '#90CAF9',
+  },
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -254,12 +293,22 @@ const styles = StyleSheet.create({
   deleteButton: {
     backgroundColor: '#2D1E1E',
     borderColor: '#442222',
-    width: '48%',
+    width: '31%',
   },
   undoButton: {
     backgroundColor: '#1E2D2D',
     borderColor: '#224444',
-    width: '48%',
+    width: '31%',
+  },
+  pencilButton: {
+    backgroundColor: '#1E1E2D',
+    borderColor: '#222244',
+    width: '31%',
+  },
+  pencilButtonActive: {
+    backgroundColor: '#2D2D4D',
+    borderColor: '#444466',
+    width: '31%',
   },
   deleteButtonText: {
     fontSize: cellSize * 0.5,
@@ -269,6 +318,11 @@ const styles = StyleSheet.create({
   undoButtonText: {
     fontSize: cellSize * 0.5,
     color: '#6BFF6B',
+    fontWeight: 'bold',
+  },
+  pencilButtonText: {
+    fontSize: cellSize * 0.5,
+    color: '#6B6BFF',
     fontWeight: 'bold',
   },
   disabledButtonText: {

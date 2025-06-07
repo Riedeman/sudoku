@@ -1,60 +1,78 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 
-type CellValue = number | null;
-type Board = CellValue[][];
+export interface SudokuCell {
+  answer: number;
+  initialValue: number | null;
+  userValue: number | null;
+  userCandidates: Set<number>;
+  autoCandidates: Set<number>;
+  autoCandidatesRemoved: Set<number>;
+  isSelected: boolean;
+  isCorrect: boolean;
+}
+
+export type Board = SudokuCell[][];
 
 interface SudokuBoardProps {
-  initialBoard: Board;
-  userBoard: Board;
+  board: Board;
   onCellPress: (row: number, col: number) => void;
-  selectedCell: { row: number; col: number } | null;
-  incorrectCells: Set<string>;
 }
 
 export const SudokuBoard: React.FC<SudokuBoardProps> = ({
-  initialBoard,
-  userBoard,
+  board,
   onCellPress,
-  selectedCell,
-  incorrectCells,
 }) => {
   const renderCell = (row: number, col: number) => {
-    const initialValue = initialBoard[row][col];
-    const userValue = userBoard[row][col];
-    const value = initialValue !== null ? initialValue : userValue;
-    const isSelected = selectedCell?.row === row && selectedCell?.col === col;
-    const isInitialValue = initialValue !== null;
-    const isIncorrect = incorrectCells.has(`${row}-${col}`);
+    const cell = board[row][col];
+    const value = cell.initialValue !== null ? cell.initialValue : cell.userValue;
+    const isInitialValue = cell.initialValue !== null;
 
     return (
       <TouchableOpacity
         key={`${row}-${col}`}
         style={[
           styles.cell,
-          isSelected && styles.selectedCell,
+          cell.isSelected && styles.selectedCell,
           col % 3 === 2 && col !== 8 && styles.rightBorder,
           row % 3 === 2 && row !== 8 && styles.bottomBorder,
         ]}
         onPress={() => onCellPress(row, col)}
       >
-        <Text
-          style={[
-            styles.cellText,
-            isInitialValue ? styles.initialValue : styles.userValue,
-            isSelected && styles.selectedText,
-            isIncorrect && styles.incorrectValue,
-          ]}
-        >
-          {value || ''}
-        </Text>
+        {value ? (
+          <Text
+            style={[
+              styles.cellText,
+              isInitialValue ? styles.initialValue : styles.userValue,
+              cell.isSelected && styles.selectedText,
+              !cell.isCorrect && !isInitialValue && styles.incorrectValue,
+            ]}
+          >
+            {value}
+          </Text>
+        ) : cell.userCandidates.size > 0 ? (
+          <View style={styles.candidatesGrid}>
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+              <View key={num} style={styles.candidateCell}>
+                <Text
+                  style={[
+                    styles.candidateText,
+                    cell.userCandidates.has(num) ? styles.activeCandidate : styles.inactiveCandidate,
+                  ]}
+                >
+                  {cell.userCandidates.has(num) ? num : ''}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
       </TouchableOpacity>
     );
   };
 
   return (
     <View style={styles.board}>
-      {initialBoard.map((row, rowIndex) => (
+      {board.map((row, rowIndex) => (
         <View key={rowIndex} style={styles.row}>
           {row.map((_, colIndex) => renderCell(rowIndex, colIndex))}
         </View>
@@ -114,5 +132,28 @@ const styles = StyleSheet.create({
   bottomBorder: {
     borderBottomWidth: 2,
     borderBottomColor: '#333',
+  },
+  candidatesGrid: {
+    width: '100%',
+    height: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: 1,
+  },
+  candidateCell: {
+    width: '33.33%',
+    height: '33.33%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  candidateText: {
+    fontSize: cellSize * 0.2,
+    textAlign: 'center',
+  },
+  activeCandidate: {
+    color: '#90CAF9',
+  },
+  inactiveCandidate: {
+    color: 'transparent',
   },
 }); 

@@ -1,9 +1,11 @@
+import { type Board, type SudokuCell } from '@/components/SudokuBoard';
+
 type CellValue = number | null;
 type Board = CellValue[][];
 
 // Generate a solved Sudoku board
-const generateSolvedBoard = (): Board => {
-  const board: Board = Array(9).fill(null).map(() => Array(9).fill(null));
+const generateSolvedBoard = (): number[][] => {
+  const board: number[][] = Array(9).fill(null).map(() => Array(9).fill(null));
   
   const isValid = (row: number, col: number, num: number): boolean => {
     // Check row
@@ -62,9 +64,8 @@ const generateSolvedBoard = (): Board => {
 };
 
 // Create a puzzle by removing numbers based on difficulty
-const createPuzzle = (difficulty: 'easy' | 'medium' | 'hard'): { puzzle: Board; solution: Board } => {
+const createPuzzle = (difficulty: 'easy' | 'medium' | 'hard'): Board => {
   const solvedBoard = generateSolvedBoard();
-  const puzzle: Board = solvedBoard.map(row => [...row]);
   
   const cellsToRemove = {
     easy: 3,
@@ -78,14 +79,24 @@ const createPuzzle = (difficulty: 'easy' | 'medium' | 'hard'): { puzzle: Board; 
     [positions[i], positions[j]] = [positions[j], positions[i]];
   }
   
-  for (let i = 0; i < cellsToRemove; i++) {
-    const pos = positions[i];
-    const row = Math.floor(pos / 9);
-    const col = pos % 9;
-    puzzle[row][col] = null;
-  }
+  // Create the board with the new cell structure
+  const board: Board = solvedBoard.map((row, rowIndex) =>
+    row.map((answer, colIndex) => {
+      const shouldRemove = positions.slice(0, cellsToRemove).includes(rowIndex * 9 + colIndex);
+      return {
+        answer,
+        initialValue: shouldRemove ? null : answer,
+        userValue: shouldRemove ? null : answer,
+        userCandidates: new Set(),
+        autoCandidates: new Set(),
+        autoCandidatesRemoved: new Set(),
+        isSelected: false,
+        isCorrect: true,
+      };
+    })
+  );
   
-  return { puzzle, solution: solvedBoard };
+  return board;
 };
 
 // Check if a move is valid against the solution
