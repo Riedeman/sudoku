@@ -79,48 +79,35 @@ const createPuzzle = (difficulty: 'easy' | 'medium' | 'hard'): Board => {
     [positions[i], positions[j]] = [positions[j], positions[i]];
   }
   
-  // Create the board with the new cell structure
-  const board: Board = solvedBoard.map((row, rowIndex) =>
-    row.map((answer, colIndex) => {
+  // Create the board as a flat array of cells
+  const board: Board = [];
+  for (let rowIndex = 0; rowIndex < 9; rowIndex++) {
+    for (let colIndex = 0; colIndex < 9; colIndex++) {
+      const answer = solvedBoard[rowIndex][colIndex];
       const shouldRemove = positions.slice(0, cellsToRemove).includes(rowIndex * 9 + colIndex);
-      return {
+      const box = Math.floor(rowIndex / 3) * 3 + Math.floor(colIndex / 3);
+      const initialValue = shouldRemove ? null : answer;
+
+			board.push({
         row: rowIndex,
         col: colIndex,
+        box,
         answer,
-        initialValue: shouldRemove ? null : answer,
-        userValue: shouldRemove ? null : answer,
+        initialValue,
+        userValue: initialValue,
         userCandidates: new Set(),
         autoCandidates: new Set(),
         autoCandidatesRemoved: new Set(),
         isSelected: false,
-        isCorrect: true,
-      };
-    })
-  );
-  
-  return board;
-};
-
-// Check if a move is valid against the solution
-const isValidMove = (board: Board, solution: Board, row: number, col: number, num: number): boolean => {
-  return solution[row][col] === num;
-};
-
-// Check if the board is solved
-const isBoardSolved = (board: Board, solution: Board): boolean => {
-	console.log('isBoardSolved', board, solution);
-  for (let row = 0; row < 9; row++) {
-    for (let col = 0; col < 9; col++) {
-      if (board[row][col] !== solution[row][col]) return false;
+      });
     }
   }
-  return true;
+  
+  return board;
 };
 
 export {
   type Board,
   type CellValue,
   createPuzzle,
-  isValidMove,
-  isBoardSolved,
 }; 

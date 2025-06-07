@@ -31,22 +31,25 @@ export default function GameScreen() {
   useEffect(() => {
     if (difficulty) {
       const newBoard = createPuzzle(difficulty);
+			console.log('newBoard', newBoard);
       setBoard(newBoard);
     }
   }, [difficulty]);
 
   const handleCellPress = (row: number, col: number) => {
     if (gameState !== 'playing' || !board) return;
-    if (board[row][col].initialValue !== null) return; // Don't select initial values
+    const cell = board.find(c => c.row === row && c.col === col);
+    if (!cell || cell.initialValue !== null) return; // Don't select initial values
 
     // Update selected state for all cells
-    const newBoard = board.map(r =>
-      r.map(cell => ({
-        ...cell,
-        isSelected: false,
-      }))
-    );
-    newBoard[row][col].isSelected = true;
+    const newBoard = board.map(cell => ({
+      ...cell,
+      isSelected: false,
+    }));
+    const selectedCell = newBoard.find(c => c.row === row && c.col === col);
+    if (selectedCell) {
+      selectedCell.isSelected = true;
+    }
     setBoard(newBoard);
     setSelectedCell({ row, col });
   };
@@ -55,11 +58,12 @@ export default function GameScreen() {
     if (gameState !== 'playing' || !board || !selectedCell) return;
     
     const { row, col } = selectedCell;
-    const cell = board[row][col];
-    if (cell.initialValue !== null) return; // Don't modify initial values
+    const cell = board.find(c => c.row === row && c.col === col);
+    if (!cell || cell.initialValue !== null) return; // Don't modify initial values
 
-    const newBoard = board.map(r => r.map(c => ({ ...c })));
-    const newCell = newBoard[row][col];
+    const newBoard = board.map(c => ({ ...c }));
+    const newCell = newBoard.find(c => c.row === row && c.col === col);
+    if (!newCell) return;
 
     if (isPencilMode) {
       // Toggle candidate
@@ -79,7 +83,6 @@ export default function GameScreen() {
       
       recordMove(row, col, previousValue, num, previousCandidates, previousCandidates);
       newCell.userValue = num;
-      newCell.isCorrect = num === newCell.answer;
     }
 
     setBoard(newBoard);
@@ -90,16 +93,16 @@ export default function GameScreen() {
     if (gameState !== 'playing' || !board || !selectedCell) return;
     
     const { row, col } = selectedCell;
-    const cell = board[row][col];
-    if (cell.initialValue !== null) return; // Don't modify initial values
+    const cell = board.find(c => c.row === row && c.col === col);
+    if (!cell || cell.initialValue !== null) return; // Don't modify initial values
 
-    const newBoard = board.map(r => r.map(c => ({ ...c })));
-    const newCell = newBoard[row][col];
+    const newBoard = board.map(c => ({ ...c }));
+    const newCell = newBoard.find(c => c.row === row && c.col === col);
+    if (!newCell) return;
 
     // Clear userValue but preserve candidates
     recordMove(row, col, newCell.userValue, null, newCell.userCandidates, newCell.userCandidates);
     newCell.userValue = null;
-    newCell.isCorrect = true;
 
     setBoard(newBoard);
   };
@@ -108,12 +111,12 @@ export default function GameScreen() {
     if (gameState !== 'playing' || !board || moveHistory.length === 0) return;
     
     const lastMove = moveHistory[moveHistory.length - 1];
-    const newBoard = board.map(r => r.map(c => ({ ...c })));
-    const cell = newBoard[lastMove.row][lastMove.col];
+    const newBoard = board.map(c => ({ ...c }));
+    const cell = newBoard.find(c => c.row === lastMove.row && c.col === lastMove.col);
+    if (!cell) return;
     
     cell.userValue = lastMove.previousValue;
     cell.userCandidates = new Set(lastMove.previousCandidates);
-    cell.isCorrect = cell.userValue === null || cell.userValue === cell.answer;
     
     setBoard(newBoard);
     setMoveHistory(prev => prev.slice(0, -1));
@@ -139,9 +142,7 @@ export default function GameScreen() {
   };
 
   const checkWinCondition = (currentBoard: Board) => {
-    const isWon = currentBoard.every(row =>
-      row.every(cell => cell.isCorrect && cell.userValue !== null)
-    );
+    const isWon = currentBoard.every(cell => cell.userValue === cell.answer);
     if (isWon) {
       setGameState('won');
     }

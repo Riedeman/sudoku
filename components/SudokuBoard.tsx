@@ -4,6 +4,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-nati
 export interface SudokuCell {
   row: number;
   col: number;
+  box: number; // 0-8 representing the 3x3 box (0: top-left, 8: bottom-right)
   answer: number;
   initialValue: number | null;
   userValue: number | null;
@@ -11,10 +12,9 @@ export interface SudokuCell {
   autoCandidates: Set<number>;
   autoCandidatesRemoved: Set<number>;
   isSelected: boolean;
-  isCorrect: boolean;
 }
 
-export type Board = SudokuCell[][];
+export type Board = SudokuCell[];
 
 interface SudokuBoardProps {
   board: Board;
@@ -25,8 +25,7 @@ export const SudokuBoard: React.FC<SudokuBoardProps> = ({
   board,
   onCellPress,
 }) => {
-  const renderCell = (row: number, col: number) => {
-    const cell = board[row][col];
+  const renderCell = (cell: SudokuCell) => {
     const value = cell.initialValue !== null ? cell.initialValue : cell.userValue;
     const isInitialValue = cell.initialValue !== null;
 
@@ -47,7 +46,7 @@ export const SudokuBoard: React.FC<SudokuBoardProps> = ({
               styles.cellText,
               isInitialValue ? styles.initialValue : styles.userValue,
               cell.isSelected && styles.selectedText,
-              !cell.isCorrect && !isInitialValue && styles.incorrectValue,
+              !isInitialValue && cell.userValue !== cell.answer && styles.incorrectValue,
             ]}
           >
             {value}
@@ -72,11 +71,16 @@ export const SudokuBoard: React.FC<SudokuBoardProps> = ({
     );
   };
 
+  // Group cells into rows for rendering
+  const rows = Array.from({ length: 9 }, (_, rowIndex) => 
+    board.filter(cell => cell.row === rowIndex)
+  );
+
   return (
     <View style={styles.board}>
-      {board.map((row, rowIndex) => (
+      {rows.map((row, rowIndex) => (
         <View key={rowIndex} style={styles.row}>
-          {row.map((_, colIndex) => renderCell(rowIndex, colIndex))}
+          {row.map(cell => renderCell(cell))}
         </View>
       ))}
     </View>
@@ -124,9 +128,6 @@ const styles = StyleSheet.create({
   selectedText: {
     color: '#90CAF9',
   },
-  incorrectValue: {
-    color: '#FF6B6B',
-  },
   rightBorder: {
     borderRightWidth: 2,
     borderRightColor: '#333',
@@ -157,5 +158,8 @@ const styles = StyleSheet.create({
   },
   inactiveCandidate: {
     color: 'transparent',
+  },
+  incorrectValue: {
+    color: 'red',
   },
 }); 
