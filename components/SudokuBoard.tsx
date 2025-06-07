@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 
 export interface SudokuCell {
+  row: number;
+  col: number;
   answer: number;
   initialValue: number | null;
   userValue: number | null;
@@ -30,14 +32,14 @@ export const SudokuBoard: React.FC<SudokuBoardProps> = ({
 
     return (
       <TouchableOpacity
-        key={`${row}-${col}`}
+        key={`${cell.row}-${cell.col}`}
         style={[
           styles.cell,
           cell.isSelected && styles.selectedCell,
-          col % 3 === 2 && col !== 8 && styles.rightBorder,
-          row % 3 === 2 && row !== 8 && styles.bottomBorder,
+          cell.col % 3 === 2 && cell.col !== 8 && styles.rightBorder,
+          cell.row % 3 === 2 && cell.row !== 8 && styles.bottomBorder,
         ]}
-        onPress={() => onCellPress(row, col)}
+        onPress={() => onCellPress(cell.row, cell.col)}
       >
         {value ? (
           <Text

@@ -84,6 +84,8 @@ const createPuzzle = (difficulty: 'easy' | 'medium' | 'hard'): Board => {
     row.map((answer, colIndex) => {
       const shouldRemove = positions.slice(0, cellsToRemove).includes(rowIndex * 9 + colIndex);
       return {
+        row: rowIndex,
+        col: colIndex,
         answer,
         initialValue: shouldRemove ? null : answer,
         userValue: shouldRemove ? null : answer,
