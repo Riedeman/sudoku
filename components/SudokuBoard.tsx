@@ -12,6 +12,7 @@ export interface SudokuCell {
   autoCandidates: Set<number>;
   autoCandidatesRemoved: Set<number>;
   isSelected: boolean;
+  isHighlighted: boolean;
 }
 
 export type Board = SudokuCell[];
@@ -35,6 +36,7 @@ export const SudokuBoard: React.FC<SudokuBoardProps> = ({
         style={[
           styles.cell,
           cell.isSelected && styles.selectedCell,
+          cell.isHighlighted && styles.highlightedCell,
           cell.col % 3 === 2 && cell.col !== 8 && styles.rightBorder,
           cell.row % 3 === 2 && cell.row !== 8 && styles.bottomBorder,
         ]}
@@ -113,6 +115,9 @@ const styles = StyleSheet.create({
   },
   selectedCell: {
     backgroundColor: '#2C2C2C',
+  },
+  highlightedCell: {
+    backgroundColor: '#2C2C4C',
   },
   cellText: {
     fontSize: cellSize * 0.4,

@@ -39,16 +39,25 @@ export default function GameScreen() {
   const handleCellPress = (row: number, col: number) => {
     if (gameState !== 'playing' || !board) return;
     const cell = board.find(c => c.row === row && c.col === col);
-    if (!cell || cell.initialValue !== null) return; // Don't select initial values
 
     // Update selected state for all cells
     const newBoard = board.map(cell => ({
       ...cell,
       isSelected: false,
+      isHighlighted: false,
     }));
     const selectedCell = newBoard.find(c => c.row === row && c.col === col);
     if (selectedCell) {
       selectedCell.isSelected = true;
+      
+      // If the selected cell has a value, highlight cells with the same value
+      if (selectedCell.userValue !== null) {
+        newBoard.forEach(cell => {
+          if (cell.userValue === selectedCell.userValue) {
+            cell.isHighlighted = true;
+          }
+        });
+      }
     }
     setBoard(newBoard);
     setSelectedCell({ row, col });
@@ -59,7 +68,6 @@ export default function GameScreen() {
     
     const { row, col } = selectedCell;
     const cell = board.find(c => c.row === row && c.col === col);
-    if (!cell || cell.initialValue !== null) return; // Don't modify initial values
 
     const newBoard = board.map(c => ({ ...c }));
     const newCell = newBoard.find(c => c.row === row && c.col === col);
