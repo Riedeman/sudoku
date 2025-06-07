@@ -46,14 +46,14 @@ export default function GameScreen() {
       isSelected: false,
       isHighlighted: false,
     }));
-    const selectedCell = newBoard.find(c => c.row === row && c.col === col);
-    if (selectedCell) {
-      selectedCell.isSelected = true;
+    const chosenCell = newBoard.find(c => c.row === row && c.col === col);
+    if (chosenCell) {
+      chosenCell.isSelected = true;
       
-      // If the selected cell has a value, highlight cells with the same value
-      if (selectedCell.userValue !== null) {
+      // If the chosen cell has a value, highlight cells with the same value
+      if (chosenCell.userValue !== null) {
         newBoard.forEach(cell => {
-          if (cell.userValue === selectedCell.userValue) {
+          if (cell.userValue === chosenCell.userValue) {
             cell.isHighlighted = true;
           }
         });
