@@ -38,59 +38,16 @@ export default function GameScreen() {
 
   const calculateAutoCandidates = () => {
     if (!board) return;
-
-    const newBoard = board.map(cell => ({ ...cell }));
+		const newBoard = board.map(cell => ({ ...cell }));
     
     // For each empty cell, calculate valid candidates
+		const allValues = new Set<number>([1,2,3,4,5,6,7,8,9]);
     newBoard.forEach(cell => {
       if (cell.userValue === null) {
-        const candidates = new Set<number>();
-        
-        // Check each number 1-9
-        for (let num = 1; num <= 9; num++) {
-          let isValid = true;
-          
-          // Check row
-          for (let col = 0; col < 9; col++) {
-            const otherCell = newBoard.find(c => c.row === cell.row && c.col === col);
-            if (otherCell?.userValue === num) {
-              isValid = false;
-              break;
-            }
-          }
-          
-          // Check column
-          for (let row = 0; row < 9; row++) {
-            const otherCell = newBoard.find(c => c.row === row && c.col === cell.col);
-            if (otherCell?.userValue === num) {
-              isValid = false;
-              break;
-            }
-          }
-          
-          // Check 3x3 box
-          const boxRow = Math.floor(cell.row / 3) * 3;
-          const boxCol = Math.floor(cell.col / 3) * 3;
-          for (let i = 0; i < 3; i++) {
-            for (let j = 0; j < 3; j++) {
-              const otherCell = newBoard.find(c => c.row === boxRow + i && c.col === boxCol + j);
-              if (otherCell?.userValue === num) {
-                isValid = false;
-                break;
-              }
-            }
-            if (!isValid) break;
-          }
-          
-          if (isValid) {
-            candidates.add(num);
-          }
-        }
-        
-        cell.autoCandidates = candidates;
+				const otherValues = new Set(newBoard.filter(c => (c.row === cell.row || c.col === cell.col || c.box === cell.box) && c.userValue !== null).map(c => c.userValue));
+        cell.autoCandidates = new Set([...allValues].filter(v => !otherValues.has(v)));;
       }
     });
-    
     setBoard(newBoard);
   };
 
