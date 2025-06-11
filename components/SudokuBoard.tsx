@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     width: boardSize,
     height: boardSize,
     borderWidth: 2,
-    borderColor: '#333',
+    borderColor: '#666',
     backgroundColor: '#1E1E1E',
   },
   row: {
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     width: cellSize,
     height: cellSize,
     borderWidth: 0.5,
-    borderColor: '#333',
+    borderColor: '#666',
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#1E1E1E',
@@ -139,11 +139,11 @@ const styles = StyleSheet.create({
   },
   rightBorder: {
     borderRightWidth: 2,
-    borderRightColor: '#333',
+    borderRightColor: '#666',
   },
   bottomBorder: {
     borderBottomWidth: 2,
-    borderBottomColor: '#333',
+    borderBottomColor: '#666',
   },
   candidatesGrid: {
     width: '100%',
