@@ -26,15 +26,73 @@ export default function GameScreen() {
   const [moveHistory, setMoveHistory] = useState<Move[]>([]);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
   const [isPencilMode, setIsPencilMode] = useState(false);
+  const [isAutoCandidateMode, setIsAutoCandidateMode] = useState(false);
 
   // Initialize the game when the component mounts
   useEffect(() => {
     if (difficulty) {
       const newBoard = createPuzzle(difficulty);
-			console.log('newBoard', newBoard);
       setBoard(newBoard);
     }
   }, [difficulty]);
+
+  const calculateAutoCandidates = () => {
+    if (!board) return;
+
+    const newBoard = board.map(cell => ({ ...cell }));
+    
+    // For each empty cell, calculate valid candidates
+    newBoard.forEach(cell => {
+      if (cell.userValue === null) {
+        const candidates = new Set<number>();
+        
+        // Check each number 1-9
+        for (let num = 1; num <= 9; num++) {
+          let isValid = true;
+          
+          // Check row
+          for (let col = 0; col < 9; col++) {
+            const otherCell = newBoard.find(c => c.row === cell.row && c.col === col);
+            if (otherCell?.userValue === num) {
+              isValid = false;
+              break;
+            }
+          }
+          
+          // Check column
+          for (let row = 0; row < 9; row++) {
+            const otherCell = newBoard.find(c => c.row === row && c.col === cell.col);
+            if (otherCell?.userValue === num) {
+              isValid = false;
+              break;
+            }
+          }
+          
+          // Check 3x3 box
+          const boxRow = Math.floor(cell.row / 3) * 3;
+          const boxCol = Math.floor(cell.col / 3) * 3;
+          for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+              const otherCell = newBoard.find(c => c.row === boxRow + i && c.col === boxCol + j);
+              if (otherCell?.userValue === num) {
+                isValid = false;
+                break;
+              }
+            }
+            if (!isValid) break;
+          }
+          
+          if (isValid) {
+            candidates.add(num);
+          }
+        }
+        
+        cell.autoCandidates = candidates;
+      }
+    });
+    
+    setBoard(newBoard);
+  };
 
   const handleCellPress = (row: number, col: number) => {
     if (gameState !== 'playing' || !board) return;
@@ -91,6 +149,11 @@ export default function GameScreen() {
       
       recordMove(row, col, previousValue, num, previousCandidates, previousCandidates);
       newCell.userValue = num;
+      
+      // Recalculate auto-candidates if auto-candidate mode is on
+      if (isAutoCandidateMode) {
+        calculateAutoCandidates();
+      }
     }
 
     setBoard(newBoard);
@@ -111,6 +174,11 @@ export default function GameScreen() {
     // Clear userValue but preserve candidates
     recordMove(row, col, newCell.userValue, null, newCell.userCandidates, newCell.userCandidates);
     newCell.userValue = null;
+
+    // Recalculate auto-candidates if auto-candidate mode is on
+    if (isAutoCandidateMode) {
+      calculateAutoCandidates();
+    }
 
     setBoard(newBoard);
   };
@@ -199,6 +267,20 @@ export default function GameScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+        <View style={styles.autoCandidateContainer}>
+          <Text style={styles.autoCandidateLabel}>Auto candidate Mode</Text>
+          <TouchableOpacity
+            style={[styles.toggleButton, isAutoCandidateMode && styles.toggleButtonActive]}
+            onPress={() => {
+              setIsAutoCandidateMode(!isAutoCandidateMode);
+              if (!isAutoCandidateMode) {
+                calculateAutoCandidates();
+              }
+            }}
+          >
+            <View style={[styles.toggleSlider, isAutoCandidateMode && styles.toggleSliderActive]} />
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
@@ -212,6 +294,7 @@ export default function GameScreen() {
           <SudokuBoard
             board={board}
             onCellPress={handleCellPress}
+            isAutoCandidateMode={isAutoCandidateMode}
           />
         </View>
         <View style={styles.numberPadContainer}>
@@ -358,5 +441,36 @@ const styles = StyleSheet.create({
     color: '#E0E0E0',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  autoCandidateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 15,
+    paddingHorizontal: 10,
+  },
+  autoCandidateLabel: {
+    color: '#E0E0E0',
+    fontSize: 16,
+  },
+  toggleButton: {
+    width: 50,
+    height: 24,
+    backgroundColor: '#333',
+    borderRadius: 12,
+    padding: 2,
+		marginLeft: 10,
+  },
+  toggleButtonActive: {
+    backgroundColor: '#4CAF50',
+  },
+  toggleSlider: {
+    width: 20,
+    height: 20,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 10,
+  },
+  toggleSliderActive: {
+    transform: [{ translateX: 26 }],
   },
 }); 

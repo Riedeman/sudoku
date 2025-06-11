@@ -20,11 +20,13 @@ export type Board = SudokuCell[];
 interface SudokuBoardProps {
   board: Board;
   onCellPress: (row: number, col: number) => void;
+  isAutoCandidateMode: boolean;
 }
 
 export const SudokuBoard: React.FC<SudokuBoardProps> = ({
   board,
   onCellPress,
+  isAutoCandidateMode,
 }) => {
   const renderCell = (cell: SudokuCell) => {
     const value = cell.initialValue !== null ? cell.initialValue : cell.userValue;
@@ -53,17 +55,19 @@ export const SudokuBoard: React.FC<SudokuBoardProps> = ({
           >
             {value}
           </Text>
-        ) : cell.userCandidates.size > 0 ? (
+        ) : (isAutoCandidateMode ? cell.autoCandidates : cell.userCandidates).size > 0 ? (
           <View style={styles.candidatesGrid}>
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
               <View key={num} style={styles.candidateCell}>
                 <Text
                   style={[
                     styles.candidateText,
-                    cell.userCandidates.has(num) ? styles.activeCandidate : styles.inactiveCandidate,
+                    (isAutoCandidateMode ? cell.autoCandidates : cell.userCandidates).has(num) 
+                      ? styles.activeCandidate 
+                      : styles.inactiveCandidate,
                   ]}
                 >
-                  {cell.userCandidates.has(num) ? num : ''}
+                  {(isAutoCandidateMode ? cell.autoCandidates : cell.userCandidates).has(num) ? num : ''}
                 </Text>
               </View>
             ))}
