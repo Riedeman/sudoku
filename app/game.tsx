@@ -36,20 +36,20 @@ export default function GameScreen() {
     }
   }, [difficulty]);
 
-  const calculateAutoCandidates = () => {
-    if (!board) return;
-		const newBoard = board.map(cell => ({ ...cell }));
+  const calculateAutoCandidates = (currentBoard: Board) => {
+    if (!currentBoard) return;
+    const newBoard = currentBoard.map(cell => ({ ...cell }));
     
     // For each empty cell, calculate valid candidates
-		const allValues = new Set<number>([1,2,3,4,5,6,7,8,9]);
+    const allValues = new Set<number>([1,2,3,4,5,6,7,8,9]);
     newBoard.forEach(cell => {
       if (cell.userValue === null) {
-				const otherValues = new Set(newBoard.filter(c => (c.row === cell.row || c.col === cell.col || c.box === cell.box) && c.userValue !== null).map(c => c.userValue));
-				const allowedValues = new Set([...allValues].filter(v => !otherValues.has(v)));
+        const otherValues = new Set(newBoard.filter(c => (c.row === cell.row || c.col === cell.col || c.box === cell.box) && c.userValue !== null).map(c => c.userValue));
+        const allowedValues = new Set([...allValues].filter(v => !otherValues.has(v)));
         cell.autoCandidates = allowedValues;
       }
     });
-    setBoard(newBoard);
+    return newBoard;
   };
 
   const handleCellPress = (row: number, col: number) => {
@@ -79,12 +79,22 @@ export default function GameScreen() {
     setSelectedCell({ row, col });
   };
 
+const updateBoard = (newBoard: Board) => {
+	if (isAutoCandidateMode) {
+		const updatedBoard = calculateAutoCandidates(newBoard);
+		if (updatedBoard) {
+			setBoard(updatedBoard);
+		}
+	} else {
+		setBoard(newBoard);
+	}
+}
+
   const handleNumberPress = (num: number) => {
     if (gameState !== 'playing' || !board || !selectedCell) return;
     
     const { row, col } = selectedCell;
     const cell = board.find(c => c.row === row && c.col === col);
-
     const newBoard = board.map(c => ({ ...c }));
     const newCell = newBoard.find(c => c.row === row && c.col === col);
     if (!newCell) return;
@@ -107,14 +117,8 @@ export default function GameScreen() {
       
       recordMove(row, col, previousValue, num, previousCandidates, previousCandidates);
       newCell.userValue = num;
-      
-      // Recalculate auto-candidates if auto-candidate mode is on
-      if (isAutoCandidateMode) {
-        calculateAutoCandidates();
-      }
     }
-
-    setBoard(newBoard);
+    updateBoard(newBoard);
     checkWinCondition(newBoard);
   };
 
@@ -133,12 +137,7 @@ export default function GameScreen() {
     recordMove(row, col, newCell.userValue, null, newCell.userCandidates, newCell.userCandidates);
     newCell.userValue = null;
 
-    // Recalculate auto-candidates if auto-candidate mode is on
-    if (isAutoCandidateMode) {
-      calculateAutoCandidates();
-    }
-
-    setBoard(newBoard);
+		updateBoard(newBoard);
   };
 
   const handleUndo = () => {
@@ -152,7 +151,7 @@ export default function GameScreen() {
     cell.userValue = lastMove.previousValue;
     cell.userCandidates = new Set(lastMove.previousCandidates);
     
-    setBoard(newBoard);
+    updateBoard(newBoard);
     setMoveHistory(prev => prev.slice(0, -1));
   };
 
@@ -231,9 +230,7 @@ export default function GameScreen() {
             style={[styles.toggleButton, isAutoCandidateMode && styles.toggleButtonActive]}
             onPress={() => {
               setIsAutoCandidateMode(!isAutoCandidateMode);
-              if (!isAutoCandidateMode) {
-                calculateAutoCandidates();
-              }
+							updateBoard(board);
             }}
           >
             <View style={[styles.toggleSlider, isAutoCandidateMode && styles.toggleSliderActive]} />
