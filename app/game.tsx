@@ -45,7 +45,8 @@ export default function GameScreen() {
     newBoard.forEach(cell => {
       if (cell.userValue === null) {
 				const otherValues = new Set(newBoard.filter(c => (c.row === cell.row || c.col === cell.col || c.box === cell.box) && c.userValue !== null).map(c => c.userValue));
-        cell.autoCandidates = new Set([...allValues].filter(v => !otherValues.has(v)));;
+				const allowedValues = new Set([...allValues].filter(v => !otherValues.has(v)));
+        cell.autoCandidates = allowedValues;
       }
     });
     setBoard(newBoard);
