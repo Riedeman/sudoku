@@ -1,6 +1,10 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 
+const { width, height } = Dimensions.get('window');
+const boardSize = Math.min(width * 0.7, height * 0.85);
+const cellSize = boardSize / 9;
+
 export interface SudokuCell {
   row: number;
   col: number;
@@ -93,10 +97,6 @@ export const SudokuBoard: React.FC<SudokuBoardProps> = ({
     </View>
   );
 };
-
-const { width } = Dimensions.get('window');
-const boardSize = width * 0.6; // Make board smaller to accommodate number pad
-const cellSize = boardSize / 9;
 
 const styles = StyleSheet.create({
   board: {

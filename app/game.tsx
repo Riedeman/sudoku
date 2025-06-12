@@ -4,8 +4,8 @@ import { SudokuBoard, type Board, type SudokuCell } from '@/components/SudokuBoa
 import { createPuzzle } from '@/utils/sudoku';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 
-const { width } = Dimensions.get('window');
-const boardSize = width * 0.6;
+const { width, height } = Dimensions.get('window');
+const boardSize = Math.min(width * 0.7, height * 0.85);
 const cellSize = boardSize / 9;
 
 type Move = {
@@ -229,24 +229,64 @@ export default function GameScreen() {
   const renderNumberPad = () => {
     return (
       <View style={styles.numberPad}>
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
-          <TouchableOpacity
-            key={num}
-            style={[
-              styles.numberButton,
-              isPencilMode && styles.pencilModeButton
-            ]}
-            onPress={() => handleNumberPress(num)}
-          >
-            <Text style={[
-              styles.numberButtonText,
-              isPencilMode && styles.pencilModeButtonText
-            ]}>
-              {num}
-            </Text>
-          </TouchableOpacity>
-        ))}
-        <View style={styles.actionButtons}>
+        <View style={styles.numberPadRow}>
+          {[1, 2, 3].map(num => (
+            <TouchableOpacity
+              key={num}
+              style={[
+                styles.numberButton,
+                isPencilMode && styles.pencilModeButton
+              ]}
+              onPress={() => handleNumberPress(num)}
+            >
+              <Text style={[
+                styles.numberButtonText,
+                isPencilMode && styles.pencilModeButtonText
+              ]}>
+                {num}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <View style={styles.numberPadRow}>
+          {[4, 5, 6].map(num => (
+            <TouchableOpacity
+              key={num}
+              style={[
+                styles.numberButton,
+                isPencilMode && styles.pencilModeButton
+              ]}
+              onPress={() => handleNumberPress(num)}
+            >
+              <Text style={[
+                styles.numberButtonText,
+                isPencilMode && styles.pencilModeButtonText
+              ]}>
+                {num}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <View style={styles.numberPadRow}>
+          {[7, 8, 9].map(num => (
+            <TouchableOpacity
+              key={num}
+              style={[
+                styles.numberButton,
+                isPencilMode && styles.pencilModeButton
+              ]}
+              onPress={() => handleNumberPress(num)}
+            >
+              <Text style={[
+                styles.numberButtonText,
+                isPencilMode && styles.pencilModeButtonText
+              ]}>
+                {num}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <View style={styles.numberPadRow}>
           <TouchableOpacity
             style={[styles.numberButton, styles.deleteButton]}
             onPress={handleDelete}
@@ -356,11 +396,13 @@ const styles = StyleSheet.create({
     paddingTop: 0,
   },
   numberPad: {
+    flexDirection: 'column',
+  },
+  numberPadRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     gap: 5,
-    width: '100%',
+		width: cellSize * 3 + 10,
   },
   numberButton: {
     width: cellSize,
@@ -371,9 +413,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#666',
+		marginBottom: 5,
   },
   numberButtonText: {
-    fontSize: cellSize * 0.65,
+    fontSize: cellSize * 0.45,
     color: '#e7f3fd',
   },
   pencilModeButton: {
@@ -414,17 +457,17 @@ const styles = StyleSheet.create({
     height: cellSize,
   },
   deleteButtonText: {
-    fontSize: cellSize * 0.5,
+    fontSize: cellSize * 0.65,
     color: '#FF6B6B',
     fontWeight: 'bold',
   },
   undoButtonText: {
-    fontSize: cellSize * 0.5,
+    fontSize: cellSize * 0.65,
     color: '#6BFF6B',
     fontWeight: 'bold',
   },
   pencilButtonText: {
-    fontSize: cellSize * 0.5,
+    fontSize: cellSize * 0.65,
     color: '#6B6BFF',
     fontWeight: 'bold',
   },
@@ -457,7 +500,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 15,
+		width: cellSize * 3 + 10,
     paddingHorizontal: 10,
   },
   autoCandidateLabel: {
@@ -465,7 +508,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   toggleButton: {
-    width: 50,
+    width: 40,
     height: 24,
     backgroundColor: '#333',
     borderRadius: 12,
