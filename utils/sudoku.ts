@@ -64,13 +64,16 @@ const generateSolvedBoard = (): number[][] => {
 };
 
 // Create a puzzle by removing numbers based on difficulty
-const createPuzzle = (difficulty: 'easy' | 'medium' | 'hard'): Board => {
+const createPuzzle = (difficulty: 'easy' | 'medium' | 'hard' | 'very-hard' | 'insane' | 'inhuman'): Board => {
   const solvedBoard = generateSolvedBoard();
   
   const cellsToRemove = {
-    easy: 3,
-    medium: 40,
-    hard: 50,
+    'easy': 19,      // 81 - 62 = 19 cells to remove
+    'medium': 28,    // 81 - 53 = 28 cells to remove
+    'hard': 37,      // 81 - 44 = 37 cells to remove
+    'very-hard': 46, // 81 - 35 = 46 cells to remove
+    'insane': 55,    // 81 - 26 = 55 cells to remove
+    'inhuman': 64,   // 81 - 17 = 64 cells to remove
   }[difficulty];
   
   const positions = Array.from({ length: 81 }, (_, i) => i);
@@ -88,7 +91,7 @@ const createPuzzle = (difficulty: 'easy' | 'medium' | 'hard'): Board => {
       const box = Math.floor(rowIndex / 3) * 3 + Math.floor(colIndex / 3);
       const initialValue = shouldRemove ? null : answer;
 
-			board.push({
+      board.push({
         row: rowIndex,
         col: colIndex,
         box,

@@ -17,7 +17,7 @@ type Move = {
 
 export default function GameScreen() {
   const router = useRouter();
-  const { difficulty } = useLocalSearchParams<{ difficulty: 'easy' | 'medium' | 'hard' }>();
+  const { difficulty } = useLocalSearchParams<{ difficulty: 'easy' | 'medium' | 'hard' | 'very-hard' | 'insane' | 'inhuman' }>();
 
   const [gameState, setGameState] = useState<'playing' | 'won'>('playing');
   const [board, setBoard] = useState<Board | null>(null);
