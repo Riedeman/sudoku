@@ -366,7 +366,15 @@ export default function GameScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: 'Free Awesome Sudoku'}} />
+      <Stack.Screen options={{ 
+        title: 'Free Awesome Sudoku',
+        headerStyle: {
+          height: 40
+        },
+        headerTitleStyle: {
+          fontSize: 16
+        }
+      }} />
       {gameState === 'playing' && renderGame()}
       {gameState === 'won' && renderWinMessage()}
     </View>
