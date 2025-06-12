@@ -11,14 +11,8 @@ const cellSize = boardSize / 9;
 type Move = {
   row: number;
   col: number;
-  previousValue: number | null;
-  newValue: number | null;
-  previousCandidates: Set<number>;
-  newCandidates: Set<number>;
-  previousAutoCandidates: Set<number>;
-  newAutoCandidates: Set<number>;
-  previousAutoCandidatesRemoved: Set<number>;
-  newAutoCandidatesRemoved: Set<number>;
+  oldCell: SudokuCell;
+  newCell: SudokuCell;
 };
 
 export default function GameScreen() {
@@ -158,10 +152,10 @@ const updateBoard = (newBoard: Board) => {
     const targetCell = newBoard.find(c => c.row === lastMove.row && c.col === lastMove.col);
     if (!targetCell) return;
     
-    targetCell.userValue = lastMove.previousValue;
-    targetCell.userCandidates = new Set(lastMove.previousCandidates);
-    targetCell.autoCandidates = new Set(lastMove.previousAutoCandidates);
-    targetCell.autoCandidatesRemoved = new Set(lastMove.previousAutoCandidatesRemoved);
+    targetCell.userValue = lastMove.oldCell.userValue;
+    targetCell.userCandidates = new Set(lastMove.oldCell.userCandidates);
+    targetCell.autoCandidates = new Set(lastMove.oldCell.autoCandidates);
+    targetCell.autoCandidatesRemoved = new Set(lastMove.oldCell.autoCandidatesRemoved);
     
     updateBoard(newBoard);
     setMoveHistory(prev => prev.slice(0, -1));
@@ -176,14 +170,8 @@ const updateBoard = (newBoard: Board) => {
     const move: Move = {
       row,
       col,
-      previousValue: oldCell.userValue,
-      newValue: newCell.userValue,
-      previousCandidates: new Set(oldCell.userCandidates),
-      newCandidates: new Set(newCell.userCandidates),
-      previousAutoCandidates: new Set(oldCell.autoCandidates),
-      newAutoCandidates: new Set(newCell.autoCandidates),
-      previousAutoCandidatesRemoved: new Set(oldCell.autoCandidatesRemoved),
-      newAutoCandidatesRemoved: new Set(newCell.autoCandidatesRemoved)
+      oldCell,
+      newCell
     };
     setMoveHistory(prev => [...prev, move]);
   };
