@@ -63,7 +63,7 @@ export const SudokuBoard: React.FC<SudokuBoardProps> = ({
                   style={[
                     styles.candidateText,
                     (isAutoCandidateMode ? cell.autoCandidates : cell.userCandidates).has(num) 
-                      ? styles.activeCandidate 
+                      ? (isAutoCandidateMode ? styles.autoCandidate : styles.userCandidate)
                       : styles.inactiveCandidate,
                   ]}
                 >
@@ -162,8 +162,11 @@ const styles = StyleSheet.create({
     fontSize: cellSize * 0.2,
     textAlign: 'center',
   },
-  activeCandidate: {
-    color: '#90CAF9',
+  userCandidate: {
+    color: '#90CAF9', // Blue for user candidates
+  },
+  autoCandidate: {
+    color: '#4CAF50', // Dark green for auto-candidates
   },
   inactiveCandidate: {
     color: 'transparent',
