@@ -222,7 +222,7 @@ const updateBoard = (newBoard: Board) => {
             onPress={() => setIsPencilMode(!isPencilMode)}
           >
             <Text style={styles.pencilButtonText}>
-              {isPencilMode ? '✎' : '✒'}
+              {isPencilMode ? '✏️' : '🖋️'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -283,7 +283,7 @@ const updateBoard = (newBoard: Board) => {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: 'Sudoku - Mine' }} />
+      <Stack.Screen options={{ title: 'Free Awesome Sudoku'}} />
       {gameState === 'playing' && renderGame()}
       {gameState === 'won' && renderWinMessage()}
     </View>
