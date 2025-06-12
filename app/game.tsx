@@ -42,7 +42,7 @@ export default function GameScreen() {
 
   const calculateAutoCandidates = (currentBoard: Board) => {
     if (!currentBoard) return;
-    const newBoard = currentBoard.map(cell => ({ ...cell }));
+    const newBoard = currentBoard.map(cell => structuredClone(cell));
     
     // For each empty cell, calculate valid candidates
     const allValues = new Set<number>([1,2,3,4,5,6,7,8,9]);
@@ -60,11 +60,12 @@ export default function GameScreen() {
     if (gameState !== 'playing' || !board) return;
 
     // Update selected state for all cells
-    const newBoard = board.map(cell => ({
-      ...cell,
-      isSelected: false,
-      isHighlighted: false,
-    }));
+    const newBoard = board.map(cell => {
+      const clonedCell = structuredClone(cell);
+      clonedCell.isSelected = false;
+      clonedCell.isHighlighted = false;
+      return clonedCell;
+    });
     const chosenCell = newBoard.find(c => c.row === row && c.col === col);
     if (chosenCell) {
       chosenCell.isSelected = true;
@@ -97,9 +98,10 @@ const updateBoard = (newBoard: Board) => {
     if (gameState !== 'playing' || !board || !selectedCell) return;
     
     const { row, col } = selectedCell;
-    const newBoard = board.map(c => ({ ...c }));
+    const newBoard = board.map(c => structuredClone(c));
     const newCell = newBoard.find(c => c.row === row && c.col === col);
-    if (!newCell) return;
+
+		if (!newCell) return;
 
     if (isPencilMode) {
       if (isAutoCandidateMode) {
@@ -180,7 +182,7 @@ const updateBoard = (newBoard: Board) => {
     const selectedCellData = board.find(c => c.row === row && c.col === col);
     if (!selectedCellData || selectedCellData.initialValue !== null) return; // Don't modify initial values
 
-    const newBoard = board.map(c => ({ ...c }));
+    const newBoard = board.map(c => structuredClone(c));
     const newCell = newBoard.find(c => c.row === row && c.col === col);
     if (!newCell) return;
 
@@ -195,7 +197,7 @@ const updateBoard = (newBoard: Board) => {
     if (gameState !== 'playing' || !board || moveHistory.length === 0) return;
     
     const lastMove = moveHistory[moveHistory.length - 1];
-    const newBoard = board.map(c => ({ ...c }));
+    const newBoard = board.map(c => structuredClone(c));
     const targetCell = newBoard.find(c => c.row === lastMove.row && c.col === lastMove.col);
     if (!targetCell) return;
     
