@@ -50,7 +50,6 @@ export const SudokuBoard: React.FC<SudokuBoardProps> = ({
               styles.cellText,
               isInitialValue ? styles.initialValue : styles.userValue,
               cell.isSelected && styles.selectedText,
-              !isInitialValue && cell.userValue !== cell.answer && styles.incorrectValue,
             ]}
           >
             {value}
@@ -118,24 +117,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#1E1E1E',
   },
   selectedCell: {
-    backgroundColor: '#2C2C2C',
+    backgroundColor: '#0c6fc0',
   },
   highlightedCell: {
-    backgroundColor: '#2C2C4C',
+    backgroundColor: '#0086b3',
   },
   cellText: {
-    fontSize: cellSize * 0.4,
+    fontSize: cellSize * 0.75,
     color: '#E0E0E0',
   },
   initialValue: {
-    fontWeight: 'bold',
-    color: '#E0E0E0',
+    color: '#92b6d3',
   },
   userValue: {
-    color: '#90CAF9',
+    color: '#e7f3fd',
   },
   selectedText: {
-    color: '#90CAF9',
+    color: '#cfe8fc',
   },
   rightBorder: {
     borderRightWidth: 2,
@@ -159,7 +157,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   candidateText: {
-    fontSize: cellSize * 0.2,
+    fontSize: cellSize * 0.23,
     textAlign: 'center',
   },
   userCandidate: {
@@ -170,8 +168,5 @@ const styles = StyleSheet.create({
   },
   inactiveCandidate: {
     color: 'transparent',
-  },
-  incorrectValue: {
-    color: 'red',
-  },
+  }
 }); 

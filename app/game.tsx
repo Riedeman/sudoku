@@ -330,8 +330,8 @@ const styles = StyleSheet.create({
     borderColor: '#666',
   },
   numberButtonText: {
-    fontSize: cellSize * 0.4,
-    color: '#E0E0E0',
+    fontSize: cellSize * 0.65,
+    color: '#e7f3fd',
   },
   pencilModeButton: {
     backgroundColor: '#1E1E2D',
@@ -355,17 +355,20 @@ const styles = StyleSheet.create({
   undoButton: {
     backgroundColor: '#1E2D2D',
     borderColor: '#224444',
-    width: '31%',
+    width: cellSize,
+    height: cellSize,
   },
   pencilButton: {
     backgroundColor: '#1E1E2D',
     borderColor: '#222244',
-    width: '31%',
+    width: cellSize,
+    height: cellSize,
   },
   pencilButtonActive: {
     backgroundColor: '#2D2D4D',
     borderColor: '#444466',
-    width: '31%',
+    width: cellSize,
+    height: cellSize,
   },
   deleteButtonText: {
     fontSize: cellSize * 0.5,
