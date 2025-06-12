@@ -15,6 +15,10 @@ type Move = {
   newValue: number | null;
   previousCandidates: Set<number>;
   newCandidates: Set<number>;
+  previousAutoCandidates: Set<number>;
+  newAutoCandidates: Set<number>;
+  previousAutoCandidatesRemoved: Set<number>;
+  newAutoCandidatesRemoved: Set<number>;
 };
 
 export default function GameScreen() {
@@ -45,7 +49,7 @@ export default function GameScreen() {
     newBoard.forEach(cell => {
       if (cell.userValue === null) {
         const otherValues = new Set(newBoard.filter(c => (c.row === cell.row || c.col === cell.col || c.box === cell.box) && c.userValue !== null).map(c => c.userValue));
-        const allowedValues = new Set([...allValues].filter(v => !otherValues.has(v)));
+        const allowedValues = new Set([...allValues].filter(v => !otherValues.has(v) && !cell.autoCandidatesRemoved.has(v)));
         cell.autoCandidates = allowedValues;
       }
     });
@@ -100,22 +104,71 @@ const updateBoard = (newBoard: Board) => {
     if (!newCell) return;
 
     if (isPencilMode) {
-      // Toggle candidate
-      const newCandidates = new Set(newCell.userCandidates);
-      if (newCandidates.has(num)) {
-        newCandidates.delete(num);
-      } else {
-        newCandidates.add(num);
+      if (isAutoCandidateMode) {
+        // Handle auto-candidate removal/restoration
+				const previousAutoCandidates = new Set(newCell.autoCandidates);
+				const previousAutoCandidatesRemoved = new Set(newCell.autoCandidatesRemoved);
+			if (newCell.autoCandidates.has(num)) {
+          // Remove from autoCandidates and add to autoCandidatesRemoved
+          newCell.autoCandidates.delete(num);
+          newCell.autoCandidatesRemoved.add(num);
+        } else if (newCell.autoCandidatesRemoved.has(num)) {
+          // Remove from autoCandidatesRemoved and add back to autoCandidates
+          newCell.autoCandidatesRemoved.delete(num);
+          newCell.autoCandidates.add(num);
+        }
+				recordMove(
+					row, 
+					col, 
+					newCell.userValue, 
+					newCell.userValue, 
+					newCell.userCandidates, 
+					newCell.userCandidates,
+					previousAutoCandidates,
+					new Set(newCell.autoCandidates),
+					previousAutoCandidatesRemoved,
+					new Set(newCell.autoCandidatesRemoved)
+				);
+		} else {
+        // Toggle user candidate
+        const newCandidates = new Set(newCell.userCandidates);
+        if (newCandidates.has(num)) {
+          newCandidates.delete(num);
+        } else {
+          newCandidates.add(num);
+        }
+        
+        recordMove(
+          row, 
+          col, 
+          newCell.userValue, 
+          newCell.userValue, 
+          newCell.userCandidates, 
+          newCandidates,
+          new Set(newCell.autoCandidates),
+          new Set(newCell.autoCandidates),
+          new Set(newCell.autoCandidatesRemoved),
+          new Set(newCell.autoCandidatesRemoved)
+        );
+        newCell.userCandidates = newCandidates;
       }
-      
-      recordMove(row, col, newCell.userValue, newCell.userValue, newCell.userCandidates, newCandidates);
-      newCell.userCandidates = newCandidates;
     } else {
       // Set value and store current candidates
       const previousValue = newCell.userValue;
       const previousCandidates = new Set(newCell.userCandidates);
       
-      recordMove(row, col, previousValue, num, previousCandidates, previousCandidates);
+      recordMove(
+        row, 
+        col, 
+        previousValue, 
+        num, 
+        previousCandidates, 
+        previousCandidates,
+        new Set(newCell.autoCandidates),
+        new Set(newCell.autoCandidates),
+        new Set(newCell.autoCandidatesRemoved),
+        new Set(newCell.autoCandidatesRemoved)
+      );
       newCell.userValue = num;
     }
     updateBoard(newBoard);
@@ -134,7 +187,7 @@ const updateBoard = (newBoard: Board) => {
     if (!newCell) return;
 
     // Clear userValue but preserve candidates
-    recordMove(row, col, newCell.userValue, null, newCell.userCandidates, newCell.userCandidates);
+    recordMove(row, col, newCell.userValue, null, newCell.userCandidates, newCell.userCandidates, new Set(newCell.autoCandidates), new Set(newCell.autoCandidates), new Set(newCell.autoCandidatesRemoved), new Set(newCell.autoCandidatesRemoved));
     newCell.userValue = null;
 
 		updateBoard(newBoard);
@@ -150,6 +203,8 @@ const updateBoard = (newBoard: Board) => {
     
     cell.userValue = lastMove.previousValue;
     cell.userCandidates = new Set(lastMove.previousCandidates);
+    cell.autoCandidates = new Set(lastMove.previousAutoCandidates);
+    cell.autoCandidatesRemoved = new Set(lastMove.previousAutoCandidatesRemoved);
     
     updateBoard(newBoard);
     setMoveHistory(prev => prev.slice(0, -1));
@@ -161,7 +216,11 @@ const updateBoard = (newBoard: Board) => {
     previousValue: number | null,
     newValue: number | null,
     previousCandidates: Set<number>,
-    newCandidates: Set<number>
+    newCandidates: Set<number>,
+    previousAutoCandidates: Set<number>,
+    newAutoCandidates: Set<number>,
+    previousAutoCandidatesRemoved: Set<number>,
+    newAutoCandidatesRemoved: Set<number>
   ) => {
     const move: Move = {
       row,
@@ -170,6 +229,10 @@ const updateBoard = (newBoard: Board) => {
       newValue,
       previousCandidates,
       newCandidates,
+      previousAutoCandidates,
+      newAutoCandidates,
+      previousAutoCandidatesRemoved,
+      newAutoCandidatesRemoved
     };
     setMoveHistory(prev => [...prev, move]);
   };
