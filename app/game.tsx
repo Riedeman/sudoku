@@ -58,7 +58,6 @@ export default function GameScreen() {
 
   const handleCellPress = (row: number, col: number) => {
     if (gameState !== 'playing' || !board) return;
-    const cell = board.find(c => c.row === row && c.col === col);
 
     // Update selected state for all cells
     const newBoard = board.map(cell => ({
@@ -98,7 +97,6 @@ const updateBoard = (newBoard: Board) => {
     if (gameState !== 'playing' || !board || !selectedCell) return;
     
     const { row, col } = selectedCell;
-    const cell = board.find(c => c.row === row && c.col === col);
     const newBoard = board.map(c => ({ ...c }));
     const newCell = newBoard.find(c => c.row === row && c.col === col);
     if (!newCell) return;
@@ -179,8 +177,8 @@ const updateBoard = (newBoard: Board) => {
     if (gameState !== 'playing' || !board || !selectedCell) return;
     
     const { row, col } = selectedCell;
-    const cell = board.find(c => c.row === row && c.col === col);
-    if (!cell || cell.initialValue !== null) return; // Don't modify initial values
+    const selectedCellData = board.find(c => c.row === row && c.col === col);
+    if (!selectedCellData || selectedCellData.initialValue !== null) return; // Don't modify initial values
 
     const newBoard = board.map(c => ({ ...c }));
     const newCell = newBoard.find(c => c.row === row && c.col === col);
@@ -198,13 +196,13 @@ const updateBoard = (newBoard: Board) => {
     
     const lastMove = moveHistory[moveHistory.length - 1];
     const newBoard = board.map(c => ({ ...c }));
-    const cell = newBoard.find(c => c.row === lastMove.row && c.col === lastMove.col);
-    if (!cell) return;
+    const targetCell = newBoard.find(c => c.row === lastMove.row && c.col === lastMove.col);
+    if (!targetCell) return;
     
-    cell.userValue = lastMove.previousValue;
-    cell.userCandidates = new Set(lastMove.previousCandidates);
-    cell.autoCandidates = new Set(lastMove.previousAutoCandidates);
-    cell.autoCandidatesRemoved = new Set(lastMove.previousAutoCandidatesRemoved);
+    targetCell.userValue = lastMove.previousValue;
+    targetCell.userCandidates = new Set(lastMove.previousCandidates);
+    targetCell.autoCandidates = new Set(lastMove.previousAutoCandidates);
+    targetCell.autoCandidatesRemoved = new Set(lastMove.previousAutoCandidatesRemoved);
     
     updateBoard(newBoard);
     setMoveHistory(prev => prev.slice(0, -1));
