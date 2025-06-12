@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   boardContainer: {
     flex: 1,
@@ -321,6 +321,7 @@ const styles = StyleSheet.create({
   numberPadContainer: {
     width: '30%',
     paddingLeft: 20,
+    paddingTop: 0,
   },
   numberPad: {
     flexDirection: 'row',
@@ -337,7 +338,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#666',
   },
   numberButtonText: {
     fontSize: cellSize * 0.4,
