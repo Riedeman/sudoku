@@ -90,6 +90,7 @@ const updateBoard = (newBoard: Board) => {
 			setBoard(updatedBoard);
 		}
 	} else {
+		// When turning off auto candidate mode, we should still keep the board state
 		setBoard(newBoard);
 	}
 }
@@ -238,12 +239,18 @@ const updateBoard = (newBoard: Board) => {
           </TouchableOpacity>
         </View>
         <View style={styles.autoCandidateContainer}>
-          <Text style={styles.autoCandidateLabel}>Auto candidate Mode</Text>
+          <Text style={styles.autoCandidateLabel}>Auto-Candidate Mode</Text>
           <TouchableOpacity
             style={[styles.toggleButton, isAutoCandidateMode && styles.toggleButtonActive]}
             onPress={() => {
-              setIsAutoCandidateMode(!isAutoCandidateMode);
-							updateBoard(board);
+              const newMode = !isAutoCandidateMode;
+              setIsAutoCandidateMode(newMode);
+              if (newMode && board) {
+                const updatedBoard = calculateAutoCandidates(board);
+                if (updatedBoard) {
+                  setBoard(updatedBoard);
+                }
+              }
             }}
           >
             <View style={[styles.toggleSlider, isAutoCandidateMode && styles.toggleSliderActive]} />
