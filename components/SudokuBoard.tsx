@@ -13,6 +13,7 @@ export interface SudokuCell {
   autoCandidatesRemoved: Set<number>;
   isSelected: boolean;
   isHighlighted: boolean;
+  hasConflict: boolean;
 }
 
 export type Board = SudokuCell[];
@@ -44,6 +45,7 @@ export const SudokuBoard: React.FC<SudokuBoardProps> = ({
         ]}
         onPress={() => onCellPress(cell.row, cell.col)}
       >
+        {cell.hasConflict && <View style={styles.conflictLine} />}
         {value ? (
           <Text
             style={[
@@ -168,5 +170,15 @@ const styles = StyleSheet.create({
   },
   inactiveCandidate: {
     color: 'transparent',
-  }
+  },
+  conflictLine: {
+    position: 'absolute',
+    width: '141%', // sqrt(2) * 100% to ensure full diagonal coverage
+    height: 3,
+    backgroundColor: '#ff4444',
+    transform: [{ rotate: '135deg' }],
+    top: '50%',
+    left: '-20%',
+    zIndex: 1,
+  },
 }); 

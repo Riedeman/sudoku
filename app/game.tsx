@@ -77,17 +77,60 @@ export default function GameScreen() {
     setSelectedCell({ row, col });
   };
 
-const updateBoard = (newBoard: Board) => {
-	if (isAutoCandidateMode) {
-		const updatedBoard = calculateAutoCandidates(newBoard);
-		if (updatedBoard) {
-			setBoard(updatedBoard);
-		}
-	} else {
-		// When turning off auto candidate mode, we should still keep the board state
-		setBoard(newBoard);
-	}
-}
+  const checkConflicts = (currentBoard: Board) => {
+    const newBoard = currentBoard.map(cell => ({
+      ...cell,
+      hasConflict: false
+    }));
+
+    // Check each cell for conflicts
+    newBoard.forEach(cell => {
+      if (cell.userValue === null) return;
+
+      // Check row conflicts
+      const rowConflicts = newBoard.filter(c => 
+        c.row === cell.row && 
+        c !== cell && 
+        c.userValue === cell.userValue
+      );
+
+      // Check column conflicts
+      const colConflicts = newBoard.filter(c => 
+        c.col === cell.col && 
+        c !== cell && 
+        c.userValue === cell.userValue
+      );
+
+      // Check box conflicts
+      const boxConflicts = newBoard.filter(c => 
+        c.box === cell.box && 
+        c !== cell && 
+        c.userValue === cell.userValue
+      );
+
+      // If there are any conflicts, mark both the current cell and conflicting cells
+      if (rowConflicts.length > 0 || colConflicts.length > 0 || boxConflicts.length > 0) {
+        cell.hasConflict = true;
+        [...rowConflicts, ...colConflicts, ...boxConflicts].forEach(conflictCell => {
+          conflictCell.hasConflict = true;
+        });
+      }
+    });
+
+    return newBoard;
+  };
+
+  const updateBoard = (newBoard: Board) => {
+    const boardWithConflicts = checkConflicts(newBoard);
+    if (isAutoCandidateMode) {
+      const updatedBoard = calculateAutoCandidates(boardWithConflicts);
+      if (updatedBoard) {
+        setBoard(updatedBoard);
+      }
+    } else {
+      setBoard(boardWithConflicts);
+    }
+  };
 
   const handleNumberPress = (num: number) => {
     if (gameState !== 'playing' || !board || !selectedCell) return;
