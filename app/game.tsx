@@ -2,7 +2,7 @@ import { StyleSheet, View, Text, TouchableOpacity, Dimensions } from 'react-nati
 import { useState, useEffect } from 'react';
 import { SudokuBoard, type Board, type SudokuCell } from '@/components/SudokuBoard';
 import { createPuzzle } from '@/utils/sudoku';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 const boardSize = width * 0.6;
@@ -283,6 +283,7 @@ const updateBoard = (newBoard: Board) => {
 
   return (
     <View style={styles.container}>
+      <Stack.Screen options={{ title: 'Sudoku - Mine' }} />
       {gameState === 'playing' && renderGame()}
       {gameState === 'won' && renderWinMessage()}
     </View>
