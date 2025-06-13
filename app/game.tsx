@@ -385,7 +385,7 @@ export default function GameScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ 
-        title: 'Free Awesome Sudoku',
+        title: `Sudoku - ${difficulty?.charAt(0).toUpperCase()}${difficulty?.slice(1)}`,
         headerStyle: {
           height: 40
         },
