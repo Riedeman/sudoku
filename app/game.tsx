@@ -8,6 +8,24 @@ const { width, height } = Dimensions.get('window');
 const boardSize = Math.min(width * 0.7, height * 0.85);
 const cellSize = boardSize / 9;
 
+const deepCopy = <T>(obj: T): T => {
+  if (obj === null || typeof obj !== 'object') {
+    return obj;
+  }
+  
+  if (obj instanceof Set) {
+    return new Set([...obj]) as unknown as T;
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(item => deepCopy(item)) as unknown as T;
+  }
+  
+  return Object.fromEntries(
+    Object.entries(obj as object).map(([key, value]) => [key, deepCopy(value)])
+  ) as T;
+};
+
 type Move = {
   row: number;
   col: number;
@@ -36,7 +54,7 @@ export default function GameScreen() {
 
   const calculateAutoCandidates = (currentBoard: Board) => {
     if (!currentBoard) return;
-    const newBoard = currentBoard.map(cell => structuredClone(cell));
+    const newBoard = currentBoard.map(cell => deepCopy(cell));
     
     // For each empty cell, calculate valid candidates
     const allValues = new Set<number>([1,2,3,4,5,6,7,8,9]);
@@ -55,7 +73,7 @@ export default function GameScreen() {
 
     // Update selected state for all cells
     const newBoard = board.map(cell => {
-      const clonedCell = structuredClone(cell);
+      const clonedCell = deepCopy(cell);
       clonedCell.isSelected = false;
       clonedCell.isHighlighted = false;
       return clonedCell;
@@ -136,11 +154,11 @@ export default function GameScreen() {
     if (gameState !== 'playing' || !board || !selectedCell) return;
     
     const { row, col } = selectedCell;
-    const newBoard = board.map(c => structuredClone(c));
+    const newBoard = board.map(c => deepCopy(c));
     const newCell = newBoard.find(c => c.row === row && c.col === col);
 		if (!newCell) return;
 
-		const oldCell = structuredClone(newCell);
+		const oldCell = deepCopy(newCell);
     if (isPencilMode) {
       if (isAutoCandidateMode) {
 			if (newCell.autoCandidates.has(num)) {
@@ -177,11 +195,11 @@ export default function GameScreen() {
     const selectedCellData = board.find(c => c.row === row && c.col === col);
     if (!selectedCellData || selectedCellData.initialValue !== null) return; // Don't modify initial values
 
-    const newBoard = board.map(c => structuredClone(c));
+    const newBoard = board.map(c => deepCopy(c));
     const newCell = newBoard.find(c => c.row === row && c.col === col);
     if (!newCell) return;
 
-		const oldCell = structuredClone(newCell);
+		const oldCell = deepCopy(newCell);
     newCell.userValue = null;
     recordMove(row, col, oldCell, newCell);
 		updateBoard(newBoard);
@@ -191,7 +209,7 @@ export default function GameScreen() {
     if (gameState !== 'playing' || !board || moveHistory.length === 0) return;
     
     const lastMove = moveHistory[moveHistory.length - 1];
-    const newBoard = board.map(c => structuredClone(c));
+    const newBoard = board.map(c => deepCopy(c));
     const targetCell = newBoard.find(c => c.row === lastMove.row && c.col === lastMove.col);
     if (!targetCell) return;
     
