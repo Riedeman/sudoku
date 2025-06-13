@@ -138,12 +138,12 @@ const styles = StyleSheet.create({
     color: '#cfe8fc',
   },
   rightBorder: {
-    borderRightWidth: 2,
-    borderRightColor: '#666',
+    borderRightWidth: 3,
+    borderRightColor: '#aaa',
   },
   bottomBorder: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#666',
+    borderBottomWidth: 3,
+    borderBottomColor: '#aaa',
   },
   candidatesGrid: {
     width: '100%',
