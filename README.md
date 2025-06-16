@@ -1,13 +1,14 @@
 # Sudoku React Native App
 
-Sudoku game built with React Native, featuring a clean UI and smooth gameplay experience.
+Sudoku game built with React Native, featuring a clean UI and smooth gameplay experience.  Runs on web, iOS, and (soon) Android.
 
 ## Feature Backlog
 - Disable number pad buttons when number is complete
+- Highlight similar cells after user enters value
 - Update checkWinCondition to account for non-unique solutions
 - Make a different layout for portrait mode
 - Don't add illegal moves to undo list
-- Build and run on phone
+- Build and run on Android
 - Let user pick letters instead of numbers
 - ~~Build and run on iPad~~
 - ~~Show difficulty level on game screen~~
